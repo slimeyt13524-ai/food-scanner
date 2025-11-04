@@ -1,50 +1,61 @@
-body {
-  font-family: system-ui, sans-serif;
-  background: #f8fafc;
-  color: #111;
-  text-align: center;
-  margin: 0;
-  padding: 2rem;
+const startBtn = document.getElementById("start-scan");
+const video = document.getElementById("video");
+const statusEl = document.getElementById("status");
+const itemList = document.getElementById("item-list");
+
+let codeReader;
+
+// Start scanning when user clicks button
+startBtn.addEventListener("click", async () => {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert("Camera not supported on this device.");
+    return;
+  }
+
+  startBtn.disabled = true;
+  statusEl.textContent = "Starting camera...";
+
+  codeReader = new ZXing.BrowserMultiFormatReader();
+  try {
+    const devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+    const selectedDeviceId = devices[0].deviceId;
+    await codeReader.decodeFromVideoDevice(selectedDeviceId, "video", (result, err) => {
+      if (result) {
+        const barcode = result.text;
+        statusEl.textContent = `Scanned: ${barcode}`;
+        fetchProduct(barcode);
+      }
+      if (err && !(err instanceof ZXing.NotFoundException)) {
+        console.error(err);
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    statusEl.textContent = "Error starting camera.";
+  }
+});
+
+// Fetch product info from Open Food Facts
+async function fetchProduct(barcode) {
+  try {
+    const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+    const data = await res.json();
+
+    if (data.status === 1) {
+      const name = data.product.product_name || "Unnamed Product";
+      addItemToList(name, barcode);
+    } else {
+      addItemToList(`Unknown product (${barcode})`, barcode);
+    }
+  } catch (err) {
+    console.error(err);
+    addItemToList(`Error fetching (${barcode})`, barcode);
+  }
 }
 
-#scanner-container {
-  margin: 1rem auto;
-  max-width: 400px;
-}
-
-video {
-  width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-button {
-  margin-top: 1rem;
-  padding: 0.6rem 1rem;
-  border: none;
-  border-radius: 8px;
-  background-color: #2563eb;
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #1e40af;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-  max-width: 400px;
-  margin: 1rem auto;
-  text-align: left;
-}
-
-li {
-  background: #fff;
-  margin: 0.4rem 0;
-  padding: 0.6rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+// Add scanned product to the list
+function addItemToList(name, barcode) {
+  const li = document.createElement("li");
+  li.textContent = `${name} — ${barcode}`;
+  itemList.prepend(li); // newest first
 }
