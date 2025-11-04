@@ -48,3 +48,18 @@ li {
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
+
+
+#debug-box {
+  text-align: left;
+  background: #f1f5f9;
+  padding: 1rem;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  max-width: 400px;
+  margin: 1rem auto;
+  white-space: pre-wrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
