@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Barcode Scanner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🍎 Food Barcode Scanner</h1>
+
+  <div id="scanner-container">
+    <video id="video" autoplay playsinline></video>
+    <button id="start-scan">Start Scanning</button>
+    <p id="status">Click "Start Scanning" to begin.</p>
+  </div>
+
+  <h2>🧺 Scanned Items</h2>
+  <ul id="item-list"></ul>
+
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
+  <script src="script.js"></script>
+</body>
+</html>
