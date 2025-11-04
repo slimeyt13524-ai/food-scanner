@@ -23,9 +23,9 @@ startBtn.addEventListener("click", async () => {
       return;
     }
 
-    // 3️⃣ List cameras
+    // 3️⃣ List cameras using the correct ZXing method
     codeReader = new ZXing.BrowserMultiFormatReader();
-    const devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+    const devices = await codeReader.listVideoInputDevices();
 
     if (!devices || devices.length === 0) {
       showError("No camera devices found. Plug in a camera or check permissions.");
@@ -92,10 +92,8 @@ function addItemToList(name, barcode) {
   itemList.prepend(li);
 }
 
-// Show user-friendly error messages
 function showError(msg) {
   statusEl.style.color = "red";
   statusEl.textContent = msg;
   startBtn.disabled = false;
 }
-
