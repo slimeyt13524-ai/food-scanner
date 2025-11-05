@@ -1,22 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Food Barcode Scanner</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Fridge Tracker</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>🍎 Food Barcode Scanner</h1>
+  <!-- 🔝 Top Navigation -->
+  <nav>
+    <div class="logo">🥕 Smart Fridge</div>
+    <div class="tabs">
+      <button class="tab active" data-page="scan">Scan</button>
+      <button class="tab" data-page="items">My Items</button>
+      <button class="tab" data-page="shopping">Shopping List</button>
+      <button class="tab" data-page="info">Info</button>
+      <button class="tab" data-page="donate">Donate</button>
+    </div>
+    <button id="login-btn">Login</button>
+  </nav>
 
-  <div id="scanner-container">
-    <video id="video" autoplay playsinline></video>
-    <button id="start-scan">Start Scanning</button>
-    <p id="status">Click "Start Scanning" to begin.</p>
-  </div>
+  <!-- 📄 PAGES -->
+  <main>
+    <!-- Page 1: Scanner -->
+    <section id="page-scan" class="page active">
+      <h1>🍎 Barcode Scanner</h1>
+      <video id="video" autoplay playsinline></video>
+      <button id="start-scan">Start Scanning</button>
+      <p id="status">Click "Start Scanning" to begin.</p>
+      <ul id="item-list"></ul>
+      <pre id="debug-box"></pre>
+    </section>
 
-  <h2>🧺 Scanned Items</h2>
-  <ul id="item-list"></ul>
+    <!-- Page 2: My Items -->
+    <section id="page-items" class="page">
+      <h1>📋 My Items</h1>
+      <input type="text" id="search" placeholder="Search for an item..." />
+      <ul id="my-items-list"></ul>
+    </section>
+
+    <!-- Page 3: Shopping List -->
+    <section id="page-shopping" class="page">
+      <h1>🛒 Shopping List</h1>
+      <input type="text" id="shopping-input" placeholder="Add item..." />
+      <button id="add-shopping">Add</button>
+      <ul id="shopping-list"></ul>
+    </section>
+
+    <!-- Page 4: Info -->
+    <section id="page-info" class="page">
+      <h1>ℹ️ About Smart Fridge</h1>
+      <p>This website helps you track food in your fridge using barcode scanning and a smart shopping list. Built with Open Food Facts API and modern web technologies.</p>
+    </section>
+
+    <!-- Page 5: Donate -->
+    <section id="page-donate" class="page">
+      <h1>💖 Support Us</h1>
+      <p>If you enjoy this project, consider donating to support its development.</p>
+      <button id="donate-btn">Donate</button>
+    </section>
+  </main>
 
   <script src="https://unpkg.com/@zxing/library@latest"></script>
   <script src="script.js"></script>
