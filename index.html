@@ -25,12 +25,17 @@
     <!-- Page 1: Scanner -->
     <section id="page-scan" class="page active">
       <h1>🍎 Barcode Scanner</h1>
-      <video id="video" autoplay playsinline></video>
-      <button id="start-scan">Start Scanning</button>
+  
+      <div id="scanner-container">
+        <video id="video" autoplay playsinline></video>
+        <button id="start-scan">Start Scanning</button>
+      </div>
+
       <p id="status">Click "Start Scanning" to begin.</p>
       <ul id="item-list"></ul>
       <pre id="debug-box"></pre>
     </section>
+
 
     <!-- Page 2: My Items -->
     <section id="page-items" class="page">
@@ -65,3 +70,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+
