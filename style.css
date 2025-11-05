@@ -1,10 +1,13 @@
+/* General body and layout */
 body {
   font-family: system-ui, sans-serif;
   margin: 0;
   background: #f8fafc;
   color: #111;
+  text-align: center;
 }
 
+/* 🔝 Navbar */
 nav {
   display: flex;
   justify-content: space-between;
@@ -31,10 +34,15 @@ nav {
   cursor: pointer;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.tab:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .tab.active {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 #login-btn {
@@ -44,11 +52,17 @@ nav {
   border-radius: 8px;
   padding: 0.4rem 0.8rem;
   cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
 }
 
+#login-btn:hover {
+  background: #f1f5f9;
+}
+
+/* 📄 Page Layout */
 main {
   padding: 1rem;
-  text-align: center;
 }
 
 .page {
@@ -59,12 +73,59 @@ main {
   display: block;
 }
 
+/* 📸 Video Styling */
 video {
   width: 100%;
   max-width: 400px;
   border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  margin-bottom: 1rem;
 }
 
+/* 🎨 Start Scanning Button */
+#start-scan {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+  transition: all 0.25s ease;
+}
+
+#start-scan:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4);
+}
+
+#start-scan:active {
+  transform: scale(0.98);
+  box-shadow: 0 3px 6px rgba(37, 99, 235, 0.3);
+}
+
+/* 🧾 Lists: aligned bullets near text */
+ul {
+  list-style-position: inside; /* ✅ makes bullets align with text */
+  padding: 0;
+  margin: 0 auto;
+  text-align: left;
+  display: inline-block; /* keeps list centered as a block */
+}
+
+/* Make list items clean and readable */
+li {
+  background: #fff;
+  margin: 0.25rem 0;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  max-width: 400px;
+}
+
+/* 🧠 Debug Box */
 #debug-box {
   text-align: left;
   background: #f1f5f9;
