@@ -1,148 +1,119 @@
+// 🔀 Page switching logic
+const tabs = document.querySelectorAll(".tab");
+const pages = document.querySelectorAll(".page");
+
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    // change active tab
+    tabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    // show correct page
+    const pageId = tab.dataset.page;
+    pages.forEach(p => p.classList.remove("active"));
+    document.getElementById(`page-${pageId}`).classList.add("active");
+  });
+});
+
+// 🧾 Scanner logic (simplified, from your working debug version)
 const startBtn = document.getElementById("start-scan");
-const video = document.getElementById("video");
 const statusEl = document.getElementById("status");
 const itemList = document.getElementById("item-list");
-
-// Create a debug log element under the status area
-const debugBox = document.createElement("pre");
-debugBox.id = "debug-box";
-debugBox.style.textAlign = "left";
-debugBox.style.background = "#f1f5f9";
-debugBox.style.padding = "1rem";
-debugBox.style.borderRadius = "8px";
-debugBox.style.fontSize = "0.8rem";
-debugBox.style.maxWidth = "400px";
-debugBox.style.margin = "1rem auto";
-debugBox.style.whiteSpace = "pre-wrap";
-document.body.appendChild(debugBox);
-
-function log(msg) {
-  console.log(msg);
-  debugBox.textContent += msg + "\n";
-}
+const debugBox = document.getElementById("debug-box");
 
 let codeReader;
+let fridgeItems = JSON.parse(localStorage.getItem("fridgeItems") || "[]");
 
 startBtn.addEventListener("click", async () => {
-  statusEl.style.color = "black";
-  statusEl.textContent = "Requesting camera permission...";
-  startBtn.disabled = true;
-  debugBox.textContent = ""; // clear previous logs
-  log("=== Starting Scan Sequence ===");
-
+  debugBox.textContent = "";
+  statusEl.textContent = "Requesting camera...";
   try {
-    // 1️⃣ Check browser support
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      showError("Your browser doesn’t support camera access (getUserMedia). Try Chrome or Edge.");
-      return;
-    }
-
-    // 2️⃣ Check for HTTPS or localhost
-    const isSecure = location.protocol === "https:" || location.hostname === "localhost";
-    if (!isSecure) {
-      showError("Camera only works on HTTPS or localhost.\nTry GitHub Pages or a local server.");
-      return;
-    }
-
-    // 3️⃣ Log media devices before asking permission
-    const allDevices = await navigator.mediaDevices.enumerateDevices();
-    log(`Found ${allDevices.length} media devices before permission:`);
-    allDevices.forEach(d => log(`- ${d.kind}: ${d.label || "(no label yet)"}`));
-
-    // 4️⃣ Explicitly request permission first
-    log("Requesting permission with getUserMedia...");
     await navigator.mediaDevices.getUserMedia({ video: true });
-    log("✅ Permission granted.");
-
-    // 5️⃣ Initialize ZXing and list devices
     codeReader = new ZXing.BrowserMultiFormatReader();
     const devices = await codeReader.listVideoInputDevices();
+    const deviceId = devices[devices.length - 1].deviceId;
 
-    if (!devices || devices.length === 0) {
-      showError("No camera devices found. Plug in a camera or check permissions.");
-      log("❌ No devices after permission.");
-      return;
-    }
-
-    log(`✅ ${devices.length} camera(s) available:`);
-    devices.forEach((d, i) => log(`  [${i}] ${d.label || "(no label)"}`));
-
-    const selectedDeviceId = devices[devices.length - 1].deviceId;
-    statusEl.textContent = "Starting camera...";
-    log(`Starting camera ID: ${selectedDeviceId}`);
-
-    // 6️⃣ Start scanning
-    await codeReader.decodeFromVideoDevice(selectedDeviceId, "video", (result, err) => {
+    await codeReader.decodeFromVideoDevice(deviceId, "video", (result, err) => {
       if (result) {
         const barcode = result.text;
         statusEl.textContent = `Scanned: ${barcode}`;
-        log(`✅ Barcode detected: ${barcode}`);
         fetchProduct(barcode);
-      }
-      if (err && !(err instanceof ZXing.NotFoundException)) {
-        log(`⚠️ ZXing internal error: ${err}`);
       }
     });
 
-    statusEl.textContent = "Camera started — point it at a barcode!";
-    log("🎥 Camera stream active.");
-
-  } catch (error) {
-    handleCameraError(error);
+    statusEl.textContent = "Camera started — scan a barcode!";
+  } catch (err) {
+    statusEl.textContent = `Camera error: ${err.message}`;
   }
 });
 
+// 📦 Fetch product info from OpenFoodFacts
 async function fetchProduct(barcode) {
-  try {
-    log(`Fetching product info for: ${barcode}`);
-    const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
-    const data = await res.json();
+  const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+  const data = await res.json();
 
-    if (data.status === 1) {
-      const name = data.product.product_name || "Unnamed Product";
-      addItemToList(name, barcode);
-      log(`✅ Product found: ${name}`);
-    } else {
-      addItemToList(`Unknown product (${barcode})`, barcode);
-      log(`❌ Product not found for ${barcode}`);
-    }
-  } catch (err) {
-    console.error(err);
-    addItemToList(`Error fetching (${barcode})`, barcode);
-    log(`⚠️ Fetch error for ${barcode}: ${err.message}`);
+  if (data.status === 1) {
+    const name = data.product.product_name || "Unnamed Product";
+    addItem(name, barcode);
+  } else {
+    addItem(`Unknown product (${barcode})`, barcode);
   }
 }
 
-function addItemToList(name, barcode) {
+// ➕ Add item to list & storage
+function addItem(name, barcode) {
   const li = document.createElement("li");
   li.textContent = `${name} — ${barcode}`;
   itemList.prepend(li);
+  fridgeItems.push({ name, barcode });
+  localStorage.setItem("fridgeItems", JSON.stringify(fridgeItems));
+  renderMyItems();
 }
 
-// 🪲 Centralized error handler
-function handleCameraError(error) {
-  console.error("Camera startup error:", error);
-  log(`❌ Camera startup error: ${error.name} — ${error.message}`);
+// 🧺 My Items Page (search + list)
+const myItemsList = document.getElementById("my-items-list");
+const search = document.getElementById("search");
 
-  if (error.name === "NotAllowedError") {
-    showError("Camera permission denied. Click the lock icon in your browser and allow camera access.");
-  } else if (error.name === "NotFoundError" || error.name === "OverconstrainedError") {
-    showError("No suitable camera found. Try switching to a different device or browser.");
-  } else if (error.name === "NotReadableError") {
-    showError("Camera is in use by another app. Close Zoom, Teams, or other camera apps.");
-  } else if (error.name === "AbortError") {
-    showError("Camera initialization was aborted — try reloading the page.");
-  } else {
-    showError(`Unexpected error: ${error.message || error}`);
+function renderMyItems() {
+  myItemsList.innerHTML = "";
+  const query = search.value.toLowerCase();
+  fridgeItems
+    .filter(i => i.name.toLowerCase().includes(query))
+    .forEach(i => {
+      const li = document.createElement("li");
+      li.textContent = i.name;
+      myItemsList.appendChild(li);
+    });
+}
+
+search.addEventListener("input", renderMyItems);
+renderMyItems();
+
+// 🛒 Shopping list
+const shoppingInput = document.getElementById("shopping-input");
+const shoppingList = document.getElementById("shopping-list");
+const addShoppingBtn = document.getElementById("add-shopping");
+
+let shoppingItems = JSON.parse(localStorage.getItem("shoppingItems") || "[]");
+
+function renderShopping() {
+  shoppingList.innerHTML = "";
+  shoppingItems.forEach(item => {
+    const li = document.createElement("li");
+    const haveIt = fridgeItems.some(f => f.name.toLowerCase() === item.name.toLowerCase());
+    li.textContent = item.name + (haveIt ? " ✅" : "");
+    shoppingList.appendChild(li);
+  });
+}
+
+addShoppingBtn.addEventListener("click", () => {
+  const name = shoppingInput.value.trim();
+  if (name) {
+    shoppingItems.push({ name });
+    localStorage.setItem("shoppingItems", JSON.stringify(shoppingItems));
+    shoppingInput.value = "";
+    renderShopping();
   }
+});
 
-  startBtn.disabled = false;
-}
-
-// Helper for user-friendly status
-function showError(msg) {
-  statusEl.style.color = "red";
-  statusEl.textContent = msg;
-  log(`🚨 ${msg}`);
-  startBtn.disabled = false;
-}
+renderShopping();
